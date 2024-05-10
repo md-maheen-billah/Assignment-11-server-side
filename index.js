@@ -62,6 +62,16 @@ async function run() {
       res.send(result);
     });
 
+    // save addFood data in DB
+    app.post("/allfoods", async (req, res) => {
+      const addData = req.body;
+      addData.quantity = parseInt(addData.quantity);
+      addData.count = parseInt(addData.count);
+      const result = await addedFoodsCollection.insertOne(addData);
+      res.send(result);
+    });
+
+    // make changes to quantity and count number based on purchases
     app.patch("/purchase-changes/:id", async (req, res) => {
       const id = req.params.id;
       const updatedBooking = req.body;
