@@ -61,6 +61,15 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/purchase-changes/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await addedFoodsCollection.updateOne(filter, {
+        $inc: { quantity: -1, count: 1 },
+      });
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
