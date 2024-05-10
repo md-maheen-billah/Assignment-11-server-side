@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 9000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 
 //Must remove "/" from your production URL
@@ -42,6 +42,15 @@ async function run() {
     // get all addedFoods from DB
     app.get("/allfoods", async (req, res) => {
       const result = await addedFoodsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // get food details from DB using food id
+    app.get("/food-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await addedFoodsCollection.findOne({
+        _id: new ObjectId(id),
+      });
       res.send(result);
     });
 
