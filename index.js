@@ -57,15 +57,21 @@ async function run() {
     // save purchase data in DB
     app.post("/purchases", async (req, res) => {
       const purchaseData = req.body;
+      purchaseData.quantityBought = parseInt(purchaseData.quantityBought);
       const result = await purchasedFoodsCollection.insertOne(purchaseData);
       res.send(result);
     });
 
     app.patch("/purchase-changes/:id", async (req, res) => {
       const id = req.params.id;
+      const updatedBooking = req.body;
+      updatedBooking.quantityBought = parseInt(updatedBooking.quantityBought);
       const filter = { _id: new ObjectId(id) };
       const result = await addedFoodsCollection.updateOne(filter, {
-        $inc: { quantity: -1, count: 1 },
+        $inc: {
+          quantity: -updatedBooking.quantityBought,
+          count: updatedBooking.quantityBought,
+        },
       });
       res.send(result);
     });
