@@ -57,7 +57,6 @@ async function run() {
     // save purchase data in DB
     app.post("/purchases", async (req, res) => {
       const purchaseData = req.body;
-      purchaseData.quantityBought = parseInt(purchaseData.quantityBought);
       const result = await purchasedFoodsCollection.insertOne(purchaseData);
       res.send(result);
     });
@@ -65,8 +64,6 @@ async function run() {
     // save addFood data in DB
     app.post("/allfoods", async (req, res) => {
       const addData = req.body;
-      addData.quantity = parseInt(addData.quantity);
-      addData.count = parseInt(addData.count);
       const result = await addedFoodsCollection.insertOne(addData);
       res.send(result);
     });
@@ -75,7 +72,6 @@ async function run() {
     app.patch("/purchase-changes/:id", async (req, res) => {
       const id = req.params.id;
       const updatedBooking = req.body;
-      updatedBooking.quantityBought = parseInt(updatedBooking.quantityBought);
       const filter = { _id: new ObjectId(id) };
       const result = await addedFoodsCollection.updateOne(filter, {
         $inc: {
