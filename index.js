@@ -39,6 +39,12 @@ async function run() {
       .db("savorOasisDB")
       .collection("purchasedFoods");
 
+    // get all addedFoods from DB
+    app.get("/allfoods", async (req, res) => {
+      const result = await addedFoodsCollection.find().toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
