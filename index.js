@@ -54,6 +54,13 @@ async function run() {
       res.send(result);
     });
 
+    // save purchase data in DB
+    app.post("/purchases", async (req, res) => {
+      const purchaseData = req.body;
+      const result = await purchasedFoodsCollection.insertOne(purchaseData);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
