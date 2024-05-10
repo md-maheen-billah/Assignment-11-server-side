@@ -45,6 +45,14 @@ async function run() {
       res.send(result);
     });
 
+    // get all addedFoods posted by specific user from DB
+    app.get("/allfoods/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { sellerEmail: email };
+      const result = await addedFoodsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // get food details from DB using food id
     app.get("/food-details/:id", async (req, res) => {
       const id = req.params.id;
