@@ -53,6 +53,14 @@ async function run() {
       res.send(result);
     });
 
+    // get all purchasedFoods posted by specific user from DB
+    app.get("/purchases/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { buyerEmail: email };
+      const result = await purchasedFoodsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // get food details from DB using food id
     app.get("/food-details/:id", async (req, res) => {
       const id = req.params.id;
@@ -66,6 +74,30 @@ async function run() {
     app.post("/purchases", async (req, res) => {
       const purchaseData = req.body;
       const result = await purchasedFoodsCollection.insertOne(purchaseData);
+      res.send(result);
+    });
+
+    // delete purchase data in DB
+    app.delete("/delete-purchases/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await purchasedFoodsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // delete food data in DB
+    app.delete("/delete-food/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await addedFoodsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // delete purchase data when food data is deleted in DB
+    app.delete("/delete-purchases-food/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { foodId: id };
+      const result = await purchasedFoodsCollection.deleteOne(query);
       res.send(result);
     });
 
@@ -85,6 +117,20 @@ async function run() {
         $inc: {
           quantity: -updatedBooking.quantityBought,
           count: updatedBooking.quantityBought,
+        },
+      });
+      res.send(result);
+    });
+
+    // make changes to quantity and count number based on purchases deletion
+    app.patch("/delete-changes/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedBooking = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const result = await addedFoodsCollection.updateOne(filter, {
+        $inc: {
+          quantity: updatedBooking.quantityBought,
+          count: -updatedBooking.quantityBought,
         },
       });
       res.send(result);
