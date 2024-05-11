@@ -42,10 +42,13 @@ async function run() {
 
     // get all addedFoods from DB
     app.get("/allfoods", async (req, res) => {
-      const search = req.query.search;
-      let query = {
-        foodName: { $regex: search, $options: "i" },
-      };
+      let query = {};
+      if (req.query.search) {
+        // Construct the query with $regex if search query exists
+        query = {
+          foodName: { $regex: req.query.search, $options: "i" },
+        };
+      }
       const result = await addedFoodsCollection.find(query).toArray();
       res.send(result);
     });
