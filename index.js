@@ -46,6 +46,12 @@ async function run() {
       res.send(result);
     });
 
+    // get all gallery photos from DB
+    app.get("/gallery", async (req, res) => {
+      const result = await galleryCollection.find().toArray();
+      res.send(result);
+    });
+
     // get all addedFoods posted by specific user from DB
     app.get("/allfoods/:email", async (req, res) => {
       const email = req.params.email;
