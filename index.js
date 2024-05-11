@@ -161,18 +161,14 @@ async function run() {
     app.put("/update-foods/:id", async (req, res) => {
       console.log(req.params.id);
       const query = { _id: new ObjectId(req.params.id) };
+      const options = { upsert: true };
+      const foodData = req.body;
       const data = {
         $set: {
-          foodName: req.body.foodName,
-          foodImage: req.body.foodImage,
-          foodCategory: req.body.foodCategory,
-          foodOrigin: req.body.foodOrigin,
-          description: req.body.description,
-          quantity: req.body.quantity,
-          price: req.body.price,
+          ...foodData,
         },
       };
-      const result = await addedFoodsCollection.updateOne(query, data);
+      const result = await addedFoodsCollection.updateOne(query, data, options);
       res.send(result);
     });
 
