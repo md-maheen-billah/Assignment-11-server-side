@@ -38,6 +38,7 @@ async function run() {
     const purchasedFoodsCollection = client
       .db("savorOasisDB")
       .collection("purchasedFoods");
+    const galleryCollection = client.db("savorOasisDB").collection("gallery");
 
     // get all addedFoods from DB
     app.get("/allfoods", async (req, res) => {
@@ -105,6 +106,13 @@ async function run() {
     app.post("/allfoods", async (req, res) => {
       const addData = req.body;
       const result = await addedFoodsCollection.insertOne(addData);
+      res.send(result);
+    });
+
+    // save gallery data in DB
+    app.post("/gallery", async (req, res) => {
+      const addData = req.body;
+      const result = await galleryCollection.insertOne(addData);
       res.send(result);
     });
 
