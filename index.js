@@ -23,8 +23,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 // verify jwt middleware
-const verifyToken = (req, res, next) => {
-  const token = req.cookies?.token;
+const verifyToken = async (req, res, next) => {
+  const token = req?.cookies?.token;
   if (!token) return res.status(401).send({ message: "unauthorized access" });
   if (token) {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
@@ -74,14 +74,14 @@ async function run() {
     });
 
     // clear token on logout
-    app.get("/logout", (req, res) => {
+    const cookieOption = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production" ? true : false,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    };
+    app.post("/logout", (req, res) => {
       res
-        .clearCookie("token", {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-          maxAge: 0,
-        })
+        .clearCookie("token", { ...cookieOption, maxAge: 0 })
         .send({ success: true });
     });
 
