@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const port = process.env.PORT || 9000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -18,6 +20,22 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
+
+// verify jwt middleware
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) return res.status(401).send({ message: "unauthorized access" });
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        res.status(401).send({ message: "unauthorized access" });
+      }
+      req.user = decoded;
+      next();
+    });
+  }
+};
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xxkyfyl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -40,6 +58,33 @@ async function run() {
       .collection("purchasedFoods");
     const galleryCollection = client.db("savorOasisDB").collection("gallery");
 
+    // jwt generate
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "365d",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
+
+    // clear token on logout
+    app.get("/logout", (req, res) => {
+      res
+        .clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+          maxAge: 0,
+        })
+        .send({ success: true });
+    });
+
     // get all addedFoods from DB
     app.get("/allfoods", async (req, res) => {
       let query = {};
@@ -60,23 +105,31 @@ async function run() {
     });
 
     // get all addedFoods posted by specific user from DB
-    app.get("/allfoods/:email", async (req, res) => {
+    app.get("/allfoods/:email", verifyToken, async (req, res) => {
+      const tokenEmail = req.user.email;
       const email = req.params.email;
+      if (tokenEmail !== email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const query = { sellerEmail: email };
       const result = await addedFoodsCollection.find(query).toArray();
       res.send(result);
     });
 
     // get all purchasedFoods posted by specific user from DB
-    app.get("/purchases/:email", async (req, res) => {
+    app.get("/purchases/:email", verifyToken, async (req, res) => {
+      const tokenEmail = req.user.email;
       const email = req.params.email;
+      if (tokenEmail !== email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const query = { buyerEmail: email };
       const result = await purchasedFoodsCollection.find(query).toArray();
       res.send(result);
     });
 
     // get food details from DB using food id
-    app.get("/food-details/:id", async (req, res) => {
+    app.get("/food-details/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await addedFoodsCollection.findOne({
         _id: new ObjectId(id),
