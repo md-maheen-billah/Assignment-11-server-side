@@ -138,14 +138,14 @@ async function run() {
     });
 
     // save purchase data in DB
-    app.post("/purchases", async (req, res) => {
+    app.post("/purchases", verifyToken, async (req, res) => {
       const purchaseData = req.body;
       const result = await purchasedFoodsCollection.insertOne(purchaseData);
       res.send(result);
     });
 
     // delete purchase data in DB
-    app.delete("/delete-purchases/:id", async (req, res) => {
+    app.delete("/delete-purchases/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await purchasedFoodsCollection.deleteOne(query);
@@ -153,7 +153,7 @@ async function run() {
     });
 
     // delete food data in DB
-    app.delete("/delete-food/:id", async (req, res) => {
+    app.delete("/delete-food/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await addedFoodsCollection.deleteOne(query);
@@ -161,7 +161,7 @@ async function run() {
     });
 
     // delete purchase data when food data is deleted in DB
-    app.delete("/delete-purchases-food/:id", async (req, res) => {
+    app.delete("/delete-purchases-food/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { foodId: id };
       const result = await purchasedFoodsCollection.deleteOne(query);
@@ -169,21 +169,21 @@ async function run() {
     });
 
     // save addFood data in DB
-    app.post("/allfoods", async (req, res) => {
+    app.post("/allfoods", verifyToken, async (req, res) => {
       const addData = req.body;
       const result = await addedFoodsCollection.insertOne(addData);
       res.send(result);
     });
 
     // save gallery data in DB
-    app.post("/gallery", async (req, res) => {
+    app.post("/gallery", verifyToken, async (req, res) => {
       const addData = req.body;
       const result = await galleryCollection.insertOne(addData);
       res.send(result);
     });
 
     // make changes to quantity and count number based on purchases
-    app.patch("/purchase-changes/:id", async (req, res) => {
+    app.patch("/purchase-changes/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const updatedBooking = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -197,7 +197,7 @@ async function run() {
     });
 
     // make changes to quantity and count number based on purchases deletion
-    app.patch("/delete-changes/:id", async (req, res) => {
+    app.patch("/delete-changes/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const updatedBooking = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -211,7 +211,7 @@ async function run() {
     });
 
     // update existing added foods
-    app.put("/update-foods/:id", async (req, res) => {
+    app.put("/update-foods/:id", verifyToken, async (req, res) => {
       console.log(req.params.id);
       const query = { _id: new ObjectId(req.params.id) };
       const options = { upsert: true };
