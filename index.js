@@ -57,6 +57,9 @@ async function run() {
       .db("savorOasisDB")
       .collection("purchasedFoods");
     const galleryCollection = client.db("savorOasisDB").collection("gallery");
+    const favoriteCollection = client
+      .db("savorOasisDB")
+      .collection("favorites");
 
     // jwt generate
     app.post("/jwt", async (req, res) => {
@@ -224,6 +227,43 @@ async function run() {
         },
       };
       const result = await addedFoodsCollection.updateOne(query, data, options);
+      res.send(result);
+    });
+
+    // add to fav
+    app.post("/favorites", verifyToken, async (req, res) => {
+      const favorite = req.body;
+      const { fid, email } = req.body;
+      const existingRequest = await favoriteCollection.findOne({
+        fid,
+        email,
+      });
+      if (existingRequest) {
+        res.status(400).send("Already added to Favorite");
+        return;
+      }
+      const result = await favoriteCollection.insertOne(favorite);
+      res.send(result);
+    });
+
+    app.get("/favorites/:email", verifyToken, async (req, res) => {
+      const tokenEmail = req.user.email;
+      const email = req.params.email;
+      if (tokenEmail !== email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const result = await favoriteCollection
+        .find({
+          email: email,
+        })
+        .toArray();
+      res.send(result);
+    });
+
+    app.delete("/favorites/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await favoriteCollection.deleteOne(query);
       res.send(result);
     });
 
