@@ -187,6 +187,13 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/gallery/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await galleryCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // make changes to quantity and count number based on purchases
     app.patch("/purchase-changes/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
